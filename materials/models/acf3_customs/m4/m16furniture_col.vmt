@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\acf3_customs\m4\m16furniture_Col"
+	"$bumpmap" "models\acf3_customs\m4m16furniture_Norm"
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask" "1"
+	"$phong" "1"
+	"$phongexponent" "4"
+	"$phongboost"	"1"
+	"$phongfresnelranges"	"[1 1 1]"
+	"$envmaptint" "[0.05 0.05 0.05]"
+}

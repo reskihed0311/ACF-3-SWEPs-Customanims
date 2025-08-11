@@ -2,18 +2,20 @@ AddCSLuaFile()
 
 include("weapon_acf_base.lua")
 
-
 SWEP.Base                   = "weapon_acf_base"
 SWEP.PrintName              = "ACF M4A1"
-
 SWEP.UseHands               = true
-SWEP.ViewModel              = "models/weapons/cstrike/c_rif_m4a1.mdl"
+SWEP.ViewModel              = "models/ACF3/ar/acf3_m4.mdl"
 
-SWEP.ShotSound				= Sound(")weapons/m4a1/m4a1_unsil-1.wav")
+SWEP.CustomAnim = true
+SWEP.AimAnim = ACT_VM_IDLE   -- Different animation when aiming
+SWEP.IdleAnim = ACT_VM_IDLE              -- Animation when not aiming
+
+SWEP.ShotSound				= Sound(")acf_base/weapons/m4/fire_1.wav")
 SWEP.WorldModel             = "models/weapons/w_rif_m4a1.mdl"
 SWEP.HoldType               = "ar2"
 
-SWEP.Slot                   = 0
+SWEP.Slot                   = 2
 SWEP.SlotPos                = 0
 
 SWEP.Spawnable              = true
@@ -30,58 +32,60 @@ SWEP.Primary.Automatic      = true
 SWEP.Primary.Delay          = 0.075
 SWEP.FiremodeSetting		= 2
 
-SWEP.Caliber                = 5.56 -- mm diameter of bullet
-SWEP.ACFProjMass            = 0.004 -- kg of projectile
+SWEP.Caliber                = 5.56
+SWEP.ACFProjMass            = 0.004
 SWEP.ACFType                = "AP"
-SWEP.ACFMuzzleVel           = 800 -- m/s of bullet leaving the barrel
+SWEP.ACFMuzzleVel           = 800
 SWEP.Tracer                 = 1
 
-SWEP.IronSightPos           = Vector(-7.85, -5, -0.2)
-SWEP.IronSightAng           = Angle(2, -1.5, -4)
+SWEP.IronSightPos           = Vector(-2.78, -3.556, 0.079)
+SWEP.IronSightAng           = Angle(0, 0, 0)
 
 SWEP.Zoom					= 1.2
 SWEP.Recovery				= 5
 
 SWEP:SetupACFBullet()
 
-function SWEP:PrimaryAttack()
-	if self:Clip1() <= 0 then
-		self:EmitSound( "Weapon_Pistol.Empty" )
-		self:Reload()
-		self:SetNextPrimaryFire(CurTime() + 0.25)
+-- Remove the custom PrimaryAttack override to let the base class handle it properly
+-- The base class already handles animations correctly
 
-		self.LastShot = CurTime()
-		if SERVER then self:SetNWFloat("lastshot", self.LastShot) end
 
-		return false
-	end
 
-	local Punch = self:GetPunch()
-	self:Recoil(Punch)
-	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+sound.Add( {
+	name = "acf3.cstm_Magout",
+	channel = CHAN_AUTO,
+	volume = 1.0,
+	level = 80,
+	pitch = {95, 110},
+	sound = "acf_base/weapons/m4/magout.wav"
+} )
 
-	if not self:CanPrimaryAttack() then return end
+sound.Add( {
+	name = "acf3.cstm_Magin",
+	channel = CHAN_AUTO,
+	volume = 1.0,
+	level = 80,
+	pitch = {95, 110},
+	sound = "acf_base/weapons/m4/magin.wav"
+} )
 
-	local Ply = self:GetOwner()
-	local AimMod = self:GetAimMod()
 
-	if SERVER then
-		local Aim = self:ResolveAim()
-		local Right = Aim:Right()
-		local Up = Aim:Up()
+sound.Add( {
+	name = "acf3.cstm_Magtap",
+	channel = CHAN_AUTO,
+	volume = 1.0,
+	level = 80,
+	pitch = {95, 110},
+	sound = "acf_base/weapons/m4/magclick.wav"
+} )
 
-		local Cone = math.tan(math.rad(self.Spread * AimMod))
-		local randUnitSquare = (Up * (2 * math.random() - 1) + Right * (2 * math.random() - 1))
-		local Spread = randUnitSquare:GetNormalized() * Cone * (math.random() ^ (1 / ACF.GunInaccuracyBias))
-		local Dir = (Aim:Forward() + Spread):GetNormalized()
 
-		if self:Clip1() % 3 == 1 then self:SetNW2Float("Tracer", self.Tracer) else self:SetNW2Float("Tracer", 0) end
+sound.Add( {
+	name = "acf3.cstm_Bolttap",
+	channel = CHAN_AUTO,
+	volume = 1.0,
+	level = 80,
+	pitch = {95, 110},
+	sound = "acf_base/weapons/m4/bolt_smack1.wav"
+} )
 
-		self:ShootBullet(Ply:GetShootPos(), Dir)
-
-	end
-
-	self:PostShot(1)
-
-	timer.Simple(0.1, function() if (Ply:GetActiveWeapon() == self) and self:GetSequenceName(self:GetSequence()) ~= "reload_unsil" then self:SendWeaponAnim(ACT_VM_IDLE) end end)
-end
